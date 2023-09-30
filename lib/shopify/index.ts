@@ -59,7 +59,7 @@ const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
 type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : never;
 
 export async function shopifyFetch<T>({
-  cache = 'force-cache',
+  cache = 'no-store',
   headers,
   query,
   tags,
@@ -345,11 +345,24 @@ export async function getMenu(handle: string): Promise<Menu[]> {
     }
   });
 
+  // return (
+  //   res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
+  //     title: item.title,
+  //     path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
+  //   })) || []
+  // );
+
   return (
-    res.body?.data?.menu?.items.map((item: { title: string; url: string }) => ({
-      title: item.title,
-      path: item.url.replace(domain, '').replace('/collections', '/search').replace('/pages', '')
-    })) || []
+    res.body?.data?.menu?.items.map((item: { title: string; url: string }) => {
+      let path = item.url.replace(domain, '');
+      // Remove any leading '/' and 'collections/' from the path
+      path = path.replace(/(^\/|collections\/)/, '');
+      console.log("path ",path);
+      return {
+        title: item.title,
+        path: path
+      };
+    }) || []
   );
 }
 
